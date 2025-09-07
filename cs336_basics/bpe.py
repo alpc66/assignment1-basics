@@ -53,6 +53,7 @@ def train_bpe(
 
 
 def call_pretokenize_chunk(args):
+    """Call pretokenize_chunk with the given arguments to unpack tuple."""
     return pretokenize_chunk(*args)
 
 
@@ -87,7 +88,8 @@ def pretokenize(input_path: str, special_tokens: list[str]) -> list[bytes]:
         return total
 
 
-def iter_chunk_bytes(f, boundaries):
+def iter_chunk_bytes(f: BinaryIO, boundaries: list[int]):
+    """Yield chunks of bytes from a file given the boundaries."""
     for start, end in zip(boundaries[:-1], boundaries[1:]):
         f.seek(start)
         chunk = f.read(end - start).decode("utf-8", errors="ignore")
@@ -161,13 +163,14 @@ def find_chunk_boundaries(
 def get_pairs(
     freqs: dict[tuple[bytes], int],
 ) -> tuple[Counter, dict[tuple[bytes, bytes], set[tuple[bytes]]]]:
+    """Get counts of all symbol pairs in the dataset."""
     pairs = Counter()
     pair2key = defaultdict(set)
-    for token_seq, freq in freqs.items():
-        for i in range(len(token_seq) - 1):
-            pair = (token_seq[i], token_seq[i + 1])
+    for symbols, freq in freqs.items():
+        for i in range(len(symbols) - 1):
+            pair = (symbols[i], symbols[i + 1])
             pairs[pair] += freq
-            pair2key[pair].add(token_seq)
+            pair2key[pair].add(symbols)
     return pairs, pair2key
 
 
